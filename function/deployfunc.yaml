@@ -1,0 +1,119 @@
+data:
+  FUNCTIONS_WORKER_RUNTIME: cHl0aG9u
+  AzureWebJobsStorage: ''
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aksdeployment
+---
+data:
+  host.master: dGdQekY0YTgxSGFmS1czdHVOUGxVdm96Q1dpZlhvajBhSnBXNHJ1V3VnYmNBekZ1aFRKVFBnPT0=
+  host.function.default: THRUZXctN21RYTN5YVl3RXFRT0xlYzN3bURyRURSX0o5bW9mUFZVb3N1RGNBekZ1TmdWRTFRPT0=
+  host.systemKey.default: bXVJc3pKV1hBbFJxTk85X0t2Zk9JbTljM2NaRWNQVXZMdDREdldTRGxRaHJBekZ1NVlOUGZ3PT0=
+  functions.myleavedetails.default: YnpEWGRsZlVVRWhIZ2VaTE1yd0o4M2h0NDF5akJma1U4ZVJfMW1nNVh2Y29BekZ1NnlPSUdnPT0=
+apiVersion: v1
+kind: Secret
+metadata:
+  name: func-keys-kube-secret-aksdeployment
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: aksdeployment-function-keys-identity-svc-act
+---
+rules:
+- apiGroups:
+  - ''
+  resources:
+  - secrets
+  - configMaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: functions-keys-manager-role
+---
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: functions-keys-manager-role
+subjects:
+- kind: ServiceAccount
+  name: aksdeployment-function-keys-identity-svc-act
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: aksdeployment-function-keys-identity-svc-act-functions-keys-manager-rolebinding
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aksdeployment-http
+spec:
+  selector:
+    app: aksdeployment-http
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aksdeployment-http
+  labels:
+    app: aksdeployment-http
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aksdeployment-http
+  template:
+    metadata:
+      labels:
+        app: aksdeployment-http
+    spec:
+      containers:
+      - name: aksdeployment-http
+        image: priyankact428/myleaves2:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: AzureFunctionsJobHost__functions__0
+          value: MyLeaveDetails
+        - name: AzureWebJobsSecretStorageType
+          value: kubernetes
+        - name: AzureWebJobsKubernetesSecretName
+          value: secrets/func-keys-kube-secret-aksdeployment
+        envFrom:
+        - secretRef:
+            name: aksdeployment
+        readinessProbe:
+          failureThreshold: 3
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 240
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+        startupProbe:
+          failureThreshold: 3
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 240
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+      serviceAccountName: aksdeployment-function-keys-identity-svc-act
+---
+

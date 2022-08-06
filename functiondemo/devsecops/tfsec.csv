@@ -1,0 +1,4 @@
+file,start_line,end_line,rule_id,severity,description,link,passed
+/var/lib/jenkins/workspace/aks_demo/akstemplate/main.tf,6,25,azure-container-limit-authorized-ips,CRITICAL,Resource 'azurerm_kubernetes_cluster.cioxaks' defined without limited set of IP address ranges to the API server.,https://tfsec.dev/docs/azure/container/limit-authorized-ips#azure/container,false
+/var/lib/jenkins/workspace/aks_demo/akstemplate/main.tf,6,25,azure-container-logging,MEDIUM,Resource 'azurerm_kubernetes_cluster.cioxaks' AKS logging to Azure Monitoring is not configured.,https://tfsec.dev/docs/azure/container/logging#azure/container,false
+/var/lib/jenkins/workspace/aks_demo/akstemplate/main.tf,6,25,azure-container-use-rbac-permissions,HIGH,Resource 'azurerm_kubernetes_cluster.cioxaks' defines without RBAC,https://tfsec.dev/docs/azure/container/use-rbac-permissions#azure/container,false

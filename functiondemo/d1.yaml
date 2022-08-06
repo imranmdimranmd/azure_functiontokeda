@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: function-leave-http
+  name: function-leave-http
+  namespace: ingress-nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: function-leave-http
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: function-leave-http
+    spec:
+      containers:
+      - env:
+        - name: AzureFunctionsJobHost__functions__0
+          value: MyLeaveDetails
+        - name: AzureWebJobsSecretStorageType
+          value: kubernetes
+        - name: AzureWebJobsKubernetesSecretName
+          value: secrets/func-keys-kube-secret-function-helloworld
+        envFrom:
+        - secretRef:
+            name: function-helloworld
+        image: priyankact428/myleaves2:latest
+        imagePullPolicy: Always
+        name: function-leave-http
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 240
+        resources: {}
+        startupProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 80
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 240
+      serviceAccountName: function-helloworld-function-keys-identity-svc-act

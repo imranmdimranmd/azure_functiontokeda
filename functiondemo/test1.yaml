@@ -1,0 +1,16 @@
+resources:
+  server_group_1:
+    type: OS::Nova::ServerGroup
+    properties:
+      name: { get_param: [server_groups, 5] }
+      policies: [ { get_param: [server_group_types, 5] } ]
+
+  server_group_2:
+    type: OS::Nova::ServerGroup
+    properties:
+      name: { get_param: [server_groups, 8] }
+      policies: [ { get_param: [server_group_types, 8] } ]
+output:
+  check_1:
+    description: Name of the instance
+    value: { get_attr: [check_1, vname] }
